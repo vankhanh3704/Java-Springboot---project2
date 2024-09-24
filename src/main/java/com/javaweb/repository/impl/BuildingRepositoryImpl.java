@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.springframework.stereotype.Repository;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.javaweb.repository.BuildingRepository;
 
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.utils.ConnectionJDBCUtil;
 import com.javaweb.utils.NumberUtil;
 import com.javaweb.utils.StringUtil;
 
@@ -23,10 +25,6 @@ import Model.BuildingDTO;
 
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
-
-	static final String DB_URL = "jdbc:mysql://localhost:3306/estatebasic?autoReconnect=true&useSSL=false";
-	static final String username = "root";
-	static final String password = "Hoangkhanhvan703";
 
 	// do trong 1 hàm không thể dồn quá 1 công việc
 
@@ -55,11 +53,13 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 		// rentarea : có 2 giá trị
 		String rentAreaTo = (String) params.get("areaTo");
 		String rentAreaFrom = (String) params.get("areaFrom");
-		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
-		if ((StringUtil.checkString(rentAreaTo)) || StringUtil.checkString(rentAreaFrom)) {
-			// join tới bảng rentarea
-			sql.append(" INNER JOIN rentarea ON b.id = rentarea.buildingid ");
-		}
+//		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
+//		if ((StringUtil.checkString(rentAreaTo)) || StringUtil.checkString(rentAreaFrom)) {
+//			// join tới bảng rentarea
+//			sql.append(" INNER JOIN rentarea ON b.id = rentarea.buildingid ");
+//		}
+
+		// dùng EXITS -> không cần join
 
 	}
 
@@ -85,48 +85,69 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 		}
 	}
 
-public static void querySpecial(Map<String, Object> params,List<String> typeCode, StringBuilder where) {
-		 String staffId =(String)params.get("staffid");
-		 if(StringUtil.checkString(staffId)) {
-			 where.append(" AND assignmentbuilding.staffid = " + staffId);
-		 }
-		 
-		 // bang? rentarea
-		 String rentAreaTo = (String)params.get("areaTo");
-		 String rentAreaFrom = (String)params.get("areaFrom");
-		 // chỉ cần 1 trong 2 là được có thể lấy dữ liệu
-		 if((StringUtil.checkString(rentAreaTo))|| StringUtil.checkString(rentAreaFrom)) {
-			 if(StringUtil.checkString(rentAreaTo)){
-				 where.append(" AND rentarea.value <= " + rentAreaTo );
-			 }
-			 if(StringUtil.checkString(rentAreaFrom)){
-				 where.append(" AND rentarea.value >= " + rentAreaFrom);
-			 }
-		 }
+	public static void querySpecial(Map<String, Object> params, List<String> typeCode, StringBuilder where) {
+		String staffId = (String) params.get("staffid");
+		if (StringUtil.checkString(staffId)) {
+			where.append(" AND assignmentbuilding.staffid = " + staffId);
+		}
+
+		// bang? rentarea
+		String rentAreaTo = (String) params.get("areaTo");
+		String rentAreaFrom = (String) params.get("areaFrom");
+		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
+		if ((StringUtil.checkString(rentAreaTo)) || StringUtil.checkString(rentAreaFrom)) {
+//
+//			if (StringUtil.checkString(rentAreaTo)) {
+//				where.append(" AND rentarea.value <= " + rentAreaTo);
+//			}
+//			if (StringUtil.checkString(rentAreaFrom)) {
+//				where.append(" AND rentarea.value >= " + rentAreaFrom);
+//			}
+			where.append(" AND EXISTS (SELECT * FROM rentarea r where b.id = r.buildingid ");
+
+			if (StringUtil.checkString(rentAreaTo)) {
+				where.append(" AND r.value <= " + rentAreaTo);
+			}
+			if (StringUtil.checkString(rentAreaFrom)) {
+				where.append(" AND r.value >= " + rentAreaFrom);
+			}
+			where.append(" ) ");
+		}
 		// bang? renPrice
-		 String rentPriceTo = (String)params.get("rentPriceTo");
-		 String rentPriceFrom = (String)params.get("rentPriceFrom");
-		 // chỉ cần 1 trong 2 là được có thể lấy dữ liệu
-		 if((StringUtil.checkString(rentPriceTo))|| StringUtil.checkString(rentPriceFrom)) {
-			 if(StringUtil.checkString(rentPriceTo)){
-				 where.append(" AND b.rentprice <= " + rentPriceTo);
-			 }
-			 if(StringUtil.checkString(rentPriceFrom)){
-				 where.append(" AND b.rentprice >= " + rentPriceFrom);
-			 }
-		 } 
-		 
-		 // typeCode
-		 // dùng java 7
-		 
-		 if (typeCode != null && typeCode.size() != 0) {
-			 List<String> list = new ArrayList<>();
-			 for(String item : typeCode) {
-				 list.add("'" + item + "'");
-			 }
-			 where.append(" AND renttype.code IN(" + String.join(",", list) + ") "); 
-		 }
- 	}
+		String rentPriceTo = (String) params.get("rentPriceTo");
+		String rentPriceFrom = (String) params.get("rentPriceFrom");
+		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
+		// EXITS
+		if ((StringUtil.checkString(rentPriceTo)) || StringUtil.checkString(rentPriceFrom)) {
+			if (StringUtil.checkString(rentPriceTo)) {
+				where.append(" AND b.rentprice <= " + rentPriceTo);
+			}
+			if (StringUtil.checkString(rentPriceFrom)) {
+				where.append(" AND b.rentprice >= " + rentPriceFrom);
+			}
+
+		}
+
+		// typeCode
+		// dùng java 7
+
+//		if (typeCode != null && typeCode.size() != 0) {
+//			List<String> list = new ArrayList<>();
+//			for (String item : typeCode) {
+//				list.add("'" + item + "'");
+//			}
+//			where.append(" AND renttype.code IN(" + String.join(",", list) + ") ");
+//		}
+
+		// dùng java 8
+		if (typeCode != null && typeCode.size() != 0) {
+			where.append(" AND (");
+			String sql = typeCode.stream().map(it -> "renttype.code LIKE " + " '%" + it + "%' ")
+					.collect(Collectors.joining(" OR "));
+			where.append(sql);
+			where.append(" ) ");
+		}
+	}
 
 	@Override
 	public List<BuildingEntity> findAll(Map<String, Object> params, List<String> typeCode) {
@@ -135,8 +156,7 @@ public static void querySpecial(Map<String, Object> params,List<String> typeCode
 				"SELECT b.id, b.name, b.street, b.ward, b.districtid, b.structure, b.numberofbasement,"
 						+ "b.floorarea, b.rentprice, b.managername, b.managerphonenumber, b.servicefee, b.brokeragefee "
 						+ "\nFROM building b ");
-		
-		
+
 		// gọi hàm để thực thi
 		joinTable(params, typeCode, sql);
 		// dùng 1 StringBuilder ở đây để có thể dễ dàng xử lý các câu lệnh SQL được dễ
@@ -144,19 +164,16 @@ public static void querySpecial(Map<String, Object> params,List<String> typeCode
 		// xử lý phần WHERE
 		StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
 		queryNormal(params, sql);
-		querySpecial(params,typeCode, sql);
+		querySpecial(params, typeCode, sql);
 		// không bị trùng thì group by theo b.id
 		where.append(" GROUP BY b.id;");
 		sql.append(where);
-		
-		
-		
-		
+
 		System.out.print(sql);
 		// kiem tra dieu kien
 
 		List<BuildingEntity> result = new ArrayList<>();
-		try (Connection con = DriverManager.getConnection(DB_URL, username, password);
+		try (Connection con = ConnectionJDBCUtil.getConnection();
 				Statement stmt = con.createStatement();
 				ResultSet rs = stmt.executeQuery(sql.toString());) {
 			while (rs.next()) {

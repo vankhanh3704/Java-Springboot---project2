@@ -1,5 +1,6 @@
 package com.javaweb.repository.impl;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -14,6 +15,7 @@ import org.apache.commons.io.filefilter.AndFileFilter;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.repository.BuildingRepository;
 
 import com.javaweb.repository.entity.BuildingEntity;
@@ -29,116 +31,89 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 	// do trong 1 hàm không thể dồn quá 1 công việc
 
 	// nên ta sẽ tạo 1 hàm join để xử lý
-	public static void joinTable(Map<String, Object> params, List<String> typeCode, StringBuilder sql) {
-		// những thằng cần join typecode,area, staffid
+	public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
 
-		// đầu tiên sẽ join bảng nhân viên bằng staffid
-		String staffId = (String) params.get("staffid");
+		String staffId = buildingSearchBuilder.getStaffid().toString();
 
-		// nếu là số thì kiểm tra check xem có khác null hay không
-		// sau khi học xog thì lúc này ta sẽ dùng StringUtil
 		if (StringUtil.checkString(staffId)) {
 			sql.append(" INNER JOIN assignmentbuilding ON b.id = assignmentbuilding.buildingid ");
 		}
-		// còn nếu là xâu thì check != null trước rồi mới check != rỗng
-		// nếu có key k có value thì nó sẽ trả về xâu rỗng
-		// còn nếu không có cả 2 sẽ trả về null
+		List<String> typeCode = buildingSearchBuilder.getTypeCode();
+
 		if (typeCode != null && typeCode.size() != 0) {
-			// append bảng trung gian để lấy renttypeid
+
 			sql.append(" INNER JOIN buildingrenttype ON b.id = buildingrenttype.buildingid ");
-			// bảng cần lấy dữ liệu sau khi join bảng trung gian
 			sql.append(" INNER JOIN renttype ON renttype.id = buildingrenttype.renttypeid ");
 		}
 
-		// rentarea : có 2 giá trị
-		String rentAreaTo = (String) params.get("areaTo");
-		String rentAreaFrom = (String) params.get("areaFrom");
-//		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
-//		if ((StringUtil.checkString(rentAreaTo)) || StringUtil.checkString(rentAreaFrom)) {
-//			// join tới bảng rentarea
-//			sql.append(" INNER JOIN rentarea ON b.id = rentarea.buildingid ");
-//		}
-
-		// dùng EXITS -> không cần join
-
 	}
 
-	// join xog mới tới query
-	// hàm xử lý các câu query
-	// normal : xử lý những thằng bình thường như like , 1= 1 , số
-	// special : những thằng dùng IN , hay >= <= , hoặc là những thằng của bảng khác
-	public static void queryNormal(Map<String, Object> params, StringBuilder where) {
-		// loại những thằng special đi là được
-		// duyệt map
-		for (Map.Entry<String, Object> it : params.entrySet()) {
-			if (!it.getKey().equals("staffid") && !it.getKey().equals("typeCode") && !it.getKey().startsWith("area")
-					&& !it.getKey().startsWith("rentPrice")) {
-				String value = it.getValue().toString();
-				if (StringUtil.checkString(value)) {
-					if (NumberUtil.isNumber(value)) {
-						where.append(" AND b." + it.getKey() + " = " + value);
+	public static void queryNormal(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
+		try {
+			// field của reflection
+			Field[] fields = BuildingSearchBuilder.class.getDeclaredFields();
+			for (Field item : fields) {
+				// item là 1 field của đối tượng đó gồm có name, value
+				item.setAccessible(true); // giúp lấy được các value
+				// để bằng true thì nó mới có quyền truy cập vào value
+
+				String fieldName = item.getName();
+				if (!fieldName.equals("staffid") && !fieldName.equals("typeCode") && !fieldName.startsWith("area")
+						&& !fieldName.startsWith("rentPrice")) {
+					Object value = item.get(buildingSearchBuilder);
+					if (value != null) {
+						if (item.getType().getName().equals("java.lang.Long")
+								|| item.getType().getName().equals("java.lang.Integer")) {
+							where.append(" AND b." + fieldName + " = " + value);
+						} else if (item.getType().getName().equals("java.lang.String")) {
+							where.append(" AND b." + fieldName + " LIKE '%" + value + "%' ");
+						}
 					}
-				} else {
-					where.append(" AND b." + it.getKey() + " LIKE '%" + value + "%' ");
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+
 	}
 
-	public static void querySpecial(Map<String, Object> params, List<String> typeCode, StringBuilder where) {
-		String staffId = (String) params.get("staffid");
+	public static void querySpecial(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
+		String staffId = buildingSearchBuilder.getStaffid().toString();
 		if (StringUtil.checkString(staffId)) {
 			where.append(" AND assignmentbuilding.staffid = " + staffId);
 		}
 
 		// bang? rentarea
-		String rentAreaTo = (String) params.get("areaTo");
-		String rentAreaFrom = (String) params.get("areaFrom");
+		Long rentAreaTo = buildingSearchBuilder.getAreaTo();
+		Long rentAreaFrom = buildingSearchBuilder.getAreaFrom();
 		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
-		if ((StringUtil.checkString(rentAreaTo)) || StringUtil.checkString(rentAreaFrom)) {
-//
-//			if (StringUtil.checkString(rentAreaTo)) {
-//				where.append(" AND rentarea.value <= " + rentAreaTo);
-//			}
-//			if (StringUtil.checkString(rentAreaFrom)) {
-//				where.append(" AND rentarea.value >= " + rentAreaFrom);
-//			}
+		if (rentAreaTo != null || rentAreaFrom != null) {
+
 			where.append(" AND EXISTS (SELECT * FROM rentarea r where b.id = r.buildingid ");
 
-			if (StringUtil.checkString(rentAreaTo)) {
+			if (rentAreaTo != null) {
 				where.append(" AND r.value <= " + rentAreaTo);
 			}
-			if (StringUtil.checkString(rentAreaFrom)) {
+			if (rentAreaFrom != null) {
 				where.append(" AND r.value >= " + rentAreaFrom);
 			}
 			where.append(" ) ");
 		}
 		// bang? renPrice
-		String rentPriceTo = (String) params.get("rentPriceTo");
-		String rentPriceFrom = (String) params.get("rentPriceFrom");
+		Long rentPriceTo = buildingSearchBuilder.getRentPriceTo();
+		Long rentPriceFrom = buildingSearchBuilder.getRentPriceFrom();
 		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
 		// EXITS
-		if ((StringUtil.checkString(rentPriceTo)) || StringUtil.checkString(rentPriceFrom)) {
-			if (StringUtil.checkString(rentPriceTo)) {
+		if (rentPriceTo != null || rentAreaFrom != null) {
+			if (rentPriceTo != null) {
 				where.append(" AND b.rentprice <= " + rentPriceTo);
 			}
-			if (StringUtil.checkString(rentPriceFrom)) {
+			if (rentAreaFrom != null) {
 				where.append(" AND b.rentprice >= " + rentPriceFrom);
 			}
 
 		}
-
-		// typeCode
-		// dùng java 7
-
-//		if (typeCode != null && typeCode.size() != 0) {
-//			List<String> list = new ArrayList<>();
-//			for (String item : typeCode) {
-//				list.add("'" + item + "'");
-//			}
-//			where.append(" AND renttype.code IN(" + String.join(",", list) + ") ");
-//		}
-
+		List<String> typeCode = buildingSearchBuilder.getTypeCode();
 		// dùng java 8
 		if (typeCode != null && typeCode.size() != 0) {
 			where.append(" AND (");
@@ -150,7 +125,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 	}
 
 	@Override
-	public List<BuildingEntity> findAll(Map<String, Object> params, List<String> typeCode) {
+	public List<BuildingEntity> findAll(BuildingSearchBuilder buildingSearchBuilder) {
 		// neu tim kiem nhung k co truong du lieu thi hien thi het ra
 		StringBuilder sql = new StringBuilder(
 				"SELECT b.id, b.name, b.street, b.ward, b.districtid, b.structure, b.numberofbasement,"
@@ -158,13 +133,13 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 						+ "\nFROM building b ");
 
 		// gọi hàm để thực thi
-		joinTable(params, typeCode, sql);
+		joinTable(buildingSearchBuilder, sql);
 		// dùng 1 StringBuilder ở đây để có thể dễ dàng xử lý các câu lệnh SQL được dễ
 		// dàng
 		// xử lý phần WHERE
 		StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
-		queryNormal(params, sql);
-		querySpecial(params, typeCode, sql);
+		queryNormal(buildingSearchBuilder, where);
+		querySpecial(buildingSearchBuilder, where);
 		// không bị trùng thì group by theo b.id
 		where.append(" GROUP BY b.id;");
 		sql.append(where);

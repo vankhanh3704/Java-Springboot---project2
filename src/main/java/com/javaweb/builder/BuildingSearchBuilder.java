@@ -8,7 +8,7 @@ public class BuildingSearchBuilder {
 	private Long floorArea;
 	private String ward;
 	private String street;
-	private String districtcode;
+	private String districtid;
 	private Long numberofbasement;
 	private List<String> typeCode = new ArrayList<>();
 	private Long level;
@@ -22,17 +22,17 @@ public class BuildingSearchBuilder {
 	private Long rentPriceFrom;
 	
 	// hàm constructor dựa vào hàm con
-	public BuildingSearchBuilder(Builder builder) {
+	private BuildingSearchBuilder(Builder builder) {
 		this.name = builder.name;
 		this.floorArea = builder.floorArea;
 		this.ward = builder.ward;
 		this.street = builder.street;
-		this.districtcode = builder.districtcode;
+		this.districtid = builder.districtid;
 		this.numberofbasement = builder.numberofbasement;
 		this.typeCode = builder.typeCode;
 		this.level = builder.level;
 		this.managername = builder.managername;
-		this.managerphonenumber = builder.managername;
+		this.managerphonenumber = builder.managerphonenumber;
 		this.servicefee = builder.servicefee;
 		this.staffid = builder.staffid;
 		this.areaTo = builder.areaTo;
@@ -54,8 +54,8 @@ public class BuildingSearchBuilder {
 	public String getStreet() {
 		return street;
 	}
-	public String getDistrictcode() {
-		return districtcode;
+	public String getDistrictId() {
+		return districtid;
 	}
 	public Long getNumberofbasement() {
 		return numberofbasement;
@@ -98,7 +98,7 @@ public class BuildingSearchBuilder {
 		private Long floorArea;
 		private String ward;
 		private String street;
-		private String districtcode;
+		private String districtid;
 		private Long numberofbasement;
 		private List<String> typeCode = new ArrayList<>();
 		private Long level;
@@ -127,8 +127,8 @@ public class BuildingSearchBuilder {
 			this.street = street;
 			return this;
 		}
-		public Builder setDistrictcode(String districtcode) {
-			this.districtcode = districtcode;
+		public Builder setDistrictId(String districtid) {
+			this.districtid = districtid;
 			return this;
 		}
 		public Builder setNumberofbasement(Long numberofbasement) {
@@ -184,4 +184,7 @@ public class BuildingSearchBuilder {
 		}
 		
 	}
+
+
+	
 }

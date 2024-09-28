@@ -43,11 +43,15 @@ public class BuildingAPI {
 		return result;
 	}
 
-	public void validate(BuildingDTO buildingDTB) {
-		if (buildingDTB.getName() == null || buildingDTB.getNumberOfBasement() == null
-				|| buildingDTB.getName().equals("")) {
-			throw new FieldRequiredException("nume or numberofbasement is null");
-		}
-	}
-
+//	public void validate(BuildingDTO buildingDTB) {
+//		if (buildingDTB.getName() == null || buildingDTB.getNumberOfBasement() == null
+//				|| buildingDTB.getName().equals("")) {
+//			throw new FieldRequiredException("name or numberofbasement is null");
+//		}
+//	}
+	
+	
+//	@GetMapping(value = "/api/building/")
+//	public void 
+	
 }

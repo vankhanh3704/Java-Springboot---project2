@@ -5,10 +5,14 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+
 import javax.persistence.Table;
 
 @Entity
@@ -24,19 +28,17 @@ public class RoleEntity {
 	
 	@Column(name = "code", unique = true, nullable = false)
 	private String code;
-	
-	
-	@OneToMany(mappedBy = "role")
-	private List<UserRoleEntity> userRoleEntities = new ArrayList<>();
 
 	
+	@ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+	private List<UserEntity> users = new ArrayList<>();
 	
-	public List<UserRoleEntity> getUserRoleEntities() {
-		return userRoleEntities;
+	public List<UserEntity> getUsers() {
+		return users;
 	}
 
-	public void setUserRoleEntities(List<UserRoleEntity> userRoleEntities) {
-		this.userRoleEntities = userRoleEntities;
+	public void setUsers(List<UserEntity> users) {
+		this.users = users;
 	}
 
 	public Long getId() {

@@ -9,6 +9,7 @@ public class BuildingEntity {
 	private String structure;
 	private Long floorarea;
 	private Long rentPrice;
+	private Long rentArea;
 	private String servicefee;
 	private String brokeragefee;
 	private String managername;
@@ -86,6 +87,12 @@ public class BuildingEntity {
 	}
 	public void setStreet(String street) {
 		this.street = street;
+	}
+	public Long getRentArea() {
+		return rentArea;
+	}
+	public void setRentArea(Long rentArea) {
+		this.rentArea = rentArea;
 	}
 	
 }

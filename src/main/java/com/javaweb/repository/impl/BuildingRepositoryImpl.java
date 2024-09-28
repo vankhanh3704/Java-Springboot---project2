@@ -33,7 +33,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 	// nên ta sẽ tạo 1 hàm join để xử lý
 	public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
 
-		String staffId = buildingSearchBuilder.getStaffid().toString();
+		String staffId = buildingSearchBuilder.getStaffid();
 
 		if (StringUtil.checkString(staffId)) {
 			sql.append(" INNER JOIN assignmentbuilding ON b.id = assignmentbuilding.buildingid ");
@@ -78,7 +78,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 	}
 
 	public static void querySpecial(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
-		String staffId = buildingSearchBuilder.getStaffid().toString();
+		String staffId = buildingSearchBuilder.getStaffid();
 		if (StringUtil.checkString(staffId)) {
 			where.append(" AND assignmentbuilding.staffid = " + staffId);
 		}
@@ -104,11 +104,11 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 		Long rentPriceFrom = buildingSearchBuilder.getRentPriceFrom();
 		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
 		// EXITS
-		if (rentPriceTo != null || rentAreaFrom != null) {
+		if (rentPriceTo != null || rentPriceFrom != null) {
 			if (rentPriceTo != null) {
 				where.append(" AND b.rentprice <= " + rentPriceTo);
 			}
-			if (rentAreaFrom != null) {
+			if (rentPriceFrom != null) {
 				where.append(" AND b.rentprice >= " + rentPriceFrom);
 			}
 

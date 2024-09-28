@@ -15,7 +15,7 @@ public class BuildingSearchBuilder {
 	private String managername;
 	private String managerphonenumber;
 	private String servicefee;
-	private Long staffid;
+	private String staffid;
 	private Long areaTo;
 	private Long areaFrom;
 	private Long rentPriceTo;
@@ -75,7 +75,7 @@ public class BuildingSearchBuilder {
 	public String getServicefee() {
 		return servicefee;
 	}
-	public Long getStaffid() {
+	public String getStaffid() {
 		return staffid;
 	}
 	public Long getAreaTo() {
@@ -105,7 +105,7 @@ public class BuildingSearchBuilder {
 		private String managername;
 		private String managerphonenumber;
 		private String servicefee;
-		private Long staffid;
+		private String staffid;
 		private Long areaTo;
 		private Long areaFrom;
 		private Long rentPriceTo;
@@ -155,7 +155,7 @@ public class BuildingSearchBuilder {
 			this.servicefee = servicefee;
 			return this;
 		}
-		public Builder setStaffid(Long staffid) {
+		public Builder setStaffid(String staffid) {
 			this.staffid = staffid;
 			return this;
 		}

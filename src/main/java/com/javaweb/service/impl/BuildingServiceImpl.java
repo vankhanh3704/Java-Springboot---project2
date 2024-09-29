@@ -14,7 +14,7 @@ import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.service.BuildingService;
 
-import Model.BuildingDTO;
+import model.BuildingDTO;
 
 
 @Service

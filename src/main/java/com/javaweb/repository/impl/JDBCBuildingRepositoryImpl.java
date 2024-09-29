@@ -23,7 +23,7 @@ import com.javaweb.utils.ConnectionJDBCUtil;
 import com.javaweb.utils.NumberUtil;
 import com.javaweb.utils.StringUtil;
 
-import Model.BuildingDTO;
+import model.BuildingDTO;
 
 @Repository
 public class JDBCBuildingRepositoryImpl implements BuildingRepository {

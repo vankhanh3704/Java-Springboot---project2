@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.RentAreaEntity;
 
-import Model.BuildingDTO;
+import model.BuildingDTO;
 
 // do bị tách ra từ BuildingService nên dùng component 
 // Component : ~ giúp đánh dấu là 1 Bean nên sẽ Autowired 

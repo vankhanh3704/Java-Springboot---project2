@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JacksonInject.Value;
 import com.javaweb.service.BuildingService;
 
-import Model.BuildingDTO;
-import Model.ErrorResponseDTO;
+import model.BuildingDTO;
+import model.ErrorResponseDTO;
 import custumeExeption.FieldRequiredException;
 
 @RestController
@@ -51,7 +51,7 @@ public class BuildingAPI {
 //	}
 	
 	
-//	@GetMapping(value = "/api/building/")
-//	public void 
+	@GetMapping(value = "/api/building/")
+	public void createBuilding(@RequestBody Building)
 	
 }

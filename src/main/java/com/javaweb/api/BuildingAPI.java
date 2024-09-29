@@ -51,7 +51,7 @@ public class BuildingAPI {
 //	}
 	
 	
-	@GetMapping(value = "/api/building/")
-	public void createBuilding(@RequestBody Building)
-	
+//	@GetMapping(value = "/api/building/")
+//	public void createBuilding(@RequestBody Building)
+//	
 }

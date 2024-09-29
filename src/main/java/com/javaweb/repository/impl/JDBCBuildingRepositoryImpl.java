@@ -2,28 +2,20 @@ package com.javaweb.repository.impl;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.filefilter.AndFileFilter;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.repository.BuildingRepository;
-
 import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.utils.ConnectionJDBCUtil;
-import com.javaweb.utils.NumberUtil;
 import com.javaweb.utils.StringUtil;
-
-import model.BuildingDTO;
 
 @Repository
 public class JDBCBuildingRepositoryImpl implements BuildingRepository {

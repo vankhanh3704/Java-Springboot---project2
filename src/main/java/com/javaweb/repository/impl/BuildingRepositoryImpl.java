@@ -18,11 +18,11 @@ import com.javaweb.utils.StringUtil;
 
 @Repository
 @Primary
-public class BuildingRepositoryImpl implements BuildingRepository{
-	
+public class BuildingRepositoryImpl implements BuildingRepository {
+
 	public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
 
-		String staffId = buildingSearchBuilder.getStaffid().toString();
+		String staffId = buildingSearchBuilder.getStaffid();
 
 		if (StringUtil.checkString(staffId)) {
 			sql.append(" INNER JOIN assignmentbuilding ON b.id = assignmentbuilding.buildingid ");
@@ -67,7 +67,7 @@ public class BuildingRepositoryImpl implements BuildingRepository{
 	}
 
 	public static void querySpecial(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
-		String staffId = buildingSearchBuilder.getStaffid().toString();
+		String staffId = buildingSearchBuilder.getStaffid();
 		if (StringUtil.checkString(staffId)) {
 			where.append(" AND assignmentbuilding.staffid = " + staffId);
 		}
@@ -93,11 +93,11 @@ public class BuildingRepositoryImpl implements BuildingRepository{
 		Long rentPriceFrom = buildingSearchBuilder.getRentPriceFrom();
 		// chỉ cần 1 trong 2 là được có thể lấy dữ liệu
 		// EXITS
-		if (rentPriceTo != null || rentAreaFrom != null) {
+		if (rentPriceTo != null || rentPriceFrom != null) {
 			if (rentPriceTo != null) {
 				where.append(" AND b.rentprice <= " + rentPriceTo);
 			}
-			if (rentAreaFrom != null) {
+			if (rentPriceFrom != null) {
 				where.append(" AND b.rentprice >= " + rentPriceFrom);
 			}
 
@@ -112,32 +112,31 @@ public class BuildingRepositoryImpl implements BuildingRepository{
 			where.append(" ) ");
 		}
 	}
-	
+
 	@PersistenceContext
 	private EntityManager entityManager;
+
 	@Override
 	public List<BuildingEntity> findAll(BuildingSearchBuilder buildingSearchBuilder) {
-		
-		
-		
+
 		// JPQL
 //		String sql = "FROM BuildingEntity b";
 //		Query query = entityManager.createQuery(sql,BuildingEntity.class);
 //		return query.getResultList();
-	
-		// SQL Native 
-		StringBuilder sql = new StringBuilder( "SELECT * FROM building b WHERE b.name LIKE '%building%' ");
+
+		// SQL Native
+		StringBuilder sql = new StringBuilder(
+				"SELECT * FROM building b ");
 		joinTable(buildingSearchBuilder, sql);
 		StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
 		queryNormal(buildingSearchBuilder, where);
 		querySpecial(buildingSearchBuilder, where);
 		// không bị trùng thì group by theo b.id
-		where.append(" GROUP BY b.id;");
+		where.append(" GROUP BY b.id ");
 		sql.append(where);
-		String sqlfinal  = sql.toString();
-		System.out.print(sqlfinal);
-		Query query = entityManager.createQuery(sqlfinal,BuildingEntity.class);
+	
+		Query query = entityManager.createNativeQuery(sql.toString(), BuildingEntity.class);
 		return query.getResultList();
 	}
-	
+
 }
